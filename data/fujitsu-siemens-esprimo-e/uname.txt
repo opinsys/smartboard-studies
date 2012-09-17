@@ -1,0 +1,1 @@
+Linux testaus-esprimo-e 2.6.32-41-generic #94-Ubuntu SMP Fri Jul 6 16:51:39 UTC 2012 i686 GNU/Linux
