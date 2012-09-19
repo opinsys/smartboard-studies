@@ -35,6 +35,8 @@ int main(void)
 	usb_init();
 
 	for (;;) {
+		usleep(100);
+
 		usb_find_busses();
 		usb_find_devices();
 
