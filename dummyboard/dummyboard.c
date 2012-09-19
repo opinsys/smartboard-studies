@@ -2,6 +2,12 @@
 
 #include <usb.h>
 
+static int is_smartboard(const struct usb_device *const dev)
+{
+	return dev->descriptor.idVendor == 0x0b8c
+		&& dev->descriptor.idProduct == 0x0001;
+}
+
 int main(void)
 {
 	struct usb_bus *busses;
@@ -17,13 +23,12 @@ int main(void)
 		struct usb_device *dev;
 
 		for (dev = bus->devices; dev; dev = dev->next) {
-			if (dev->descriptor.idVendor == 0x0b8c
-			    && dev->descriptor.idProduct == 0x0001) {
-				printf("%d %d\n", bus->root_dev->devnum, dev->devnum);
-				break;
-			}
+			if (is_smartboard(dev))
+				goto smartboard_found;
 		}
 	}
+
+smartboard_found:
 
 	return 0;
 }
