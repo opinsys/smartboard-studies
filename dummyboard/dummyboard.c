@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <usb.h>
 
+static const int DUMMY_SB_IFACE = 1;
+
 static int is_smartboard(const struct usb_device *const dev)
 {
 	return dev->descriptor.idVendor == 0x0b8c
@@ -47,13 +49,13 @@ int main(void)
 		}
 
 		if (!is_detached) {
-			usb_detach_kernel_driver_np(devh, 1);
+			usb_detach_kernel_driver_np(devh, DUMMY_SB_IFACE);
 			is_detached = true;
 			continue;
 		}
 
 		if (!is_claimed) {
-			usb_claim_interface(devh, 1);
+			usb_claim_interface(devh, DUMMY_SB_IFACE);
 			is_claimed = true;
 			continue;
 		}
