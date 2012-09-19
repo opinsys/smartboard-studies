@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <stdbool.h>
 #include <usb.h>
 
 static int is_smartboard(const struct usb_device *const dev)
@@ -8,31 +8,36 @@ static int is_smartboard(const struct usb_device *const dev)
 		&& dev->descriptor.idProduct == 0x0001;
 }
 
-int main(void)
+static struct usb_device *dummy_find_smartboard(void)
 {
 	struct usb_bus *busses;
 	struct usb_bus *bus;
 	struct usb_device *dev;
 
-	usb_init();
-	usb_find_busses();
-	usb_find_devices();
-
-	busses = usb_get_busses();
-
-	for (bus = busses; bus; bus = bus->next) {
-
+	for (bus = usb_get_busses(); bus; bus = bus->next) {
 		for (dev = bus->devices; dev; dev = dev->next) {
 			if (is_smartboard(dev))
-				goto smartboard_found;
+				return dev;
 		}
 	}
+	return NULL;
+}
 
-	fprintf(stderr, "error: SMARTBoard not found\n");
-	return 1;
+int main(void)
+{
+	struct usb_device *dev = NULL;
 
-smartboard_found:
-	printf("%d\n", dev->devnum);
+	usb_init();
+
+	for (;;) {
+		usb_find_busses();
+		usb_find_devices();
+
+		if (!dev) {
+			dev = dummy_find_smartboard();
+			continue;
+		}
+	}
 
 	return 0;
 }
