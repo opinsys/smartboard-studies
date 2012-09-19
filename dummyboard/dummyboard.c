@@ -28,6 +28,7 @@ int main(void)
 	struct usb_device *dev = NULL;
 	usb_dev_handle *devh = NULL;
 	bool is_detached = false;
+	bool is_claimed = false;
 
 	usb_init();
 
@@ -48,6 +49,12 @@ int main(void)
 		if (!is_detached) {
 			usb_detach_kernel_driver_np(devh, 1);
 			is_detached = true;
+			continue;
+		}
+
+		if (!is_claimed) {
+			usb_claim_interface(devh, 1);
+			is_claimed = true;
 			continue;
 		}
 	}
