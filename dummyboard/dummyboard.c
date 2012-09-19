@@ -26,6 +26,7 @@ static struct usb_device *dummy_find_smartboard(void)
 int main(void)
 {
 	struct usb_device *dev = NULL;
+	usb_dev_handle *devh = NULL;
 
 	usb_init();
 
@@ -35,6 +36,11 @@ int main(void)
 
 		if (!dev) {
 			dev = dummy_find_smartboard();
+			continue;
+		}
+
+		if (!devh) {
+			devh = usb_open(dev);
 			continue;
 		}
 	}
