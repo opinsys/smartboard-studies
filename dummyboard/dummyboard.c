@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <usb.h>
 
+static const useconds_t DUMMY_LOOP_INTERVAL = 100000;
 static const int DUMMY_SB_IFACE = 1;
 
 static int is_smartboard(const struct usb_device *const dev)
@@ -49,7 +50,7 @@ int main(void)
 	signal(SIGUSR2, dummy_sigint_handler);
 
 	while (dummy_is_running) {
-		usleep(100);
+		usleep(DUMMY_LOOP_INTERVAL);
 
 		usb_find_busses();
 		usb_find_devices();
