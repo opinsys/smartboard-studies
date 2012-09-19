@@ -63,5 +63,11 @@ int main(void)
 		}
 	}
 
+	if (devh && is_claimed)
+		usb_release_interface(devh, DUMMY_SB_IFACE);
+
+	if (devh)
+		usb_close(devh);
+
 	return 0;
 }
