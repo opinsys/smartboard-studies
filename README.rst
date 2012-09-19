@@ -81,6 +81,8 @@ Steps to reproduce
    processes in parallel. The end result is that there are always about
    15 ``lsusb`` processes running for a very long time.
 
+4. Wait until the kernel oopses, couple of minutes approximately.
+
 Analysis
 ========
 
