@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <usb.h>
@@ -25,6 +26,13 @@ static struct usb_device *dummy_find_smartboard(void)
 	return NULL;
 }
 
+static volatile sig_atomic_t dummy_is_running = 1;
+
+static void dummy_sigint_handler(const int signum)
+{
+	dummy_is_running = 0;
+}
+
 int main(void)
 {
 	struct usb_device *dev = NULL;
@@ -34,7 +42,13 @@ int main(void)
 
 	usb_init();
 
-	for (;;) {
+	signal(SIGINT, dummy_sigint_handler);
+	signal(SIGTERM, dummy_sigint_handler);
+	signal(SIGHUP, dummy_sigint_handler);
+	signal(SIGUSR1, dummy_sigint_handler);
+	signal(SIGUSR2, dummy_sigint_handler);
+
+	while (dummy_is_running) {
 		usleep(100);
 
 		usb_find_busses();
@@ -68,6 +82,8 @@ int main(void)
 
 	if (devh)
 		usb_close(devh);
+
+	printf("GracefulShutdown™!\n");
 
 	return 0;
 }
