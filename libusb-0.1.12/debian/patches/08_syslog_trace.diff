@@ -1,7 +1,7 @@
 Index: libusb-0.1.12/linux.c
 ===================================================================
---- libusb-0.1.12.orig/linux.c	2012-09-18 14:40:42.006835760 +0300
-+++ libusb-0.1.12/linux.c	2012-09-18 14:41:29.847782063 +0300
+--- libusb-0.1.12.orig/linux.c	2012-09-19 15:42:04.003484041 +0200
++++ libusb-0.1.12/linux.c	2012-09-19 15:48:33.277184441 +0200
 @@ -14,6 +14,7 @@
  #include <errno.h>
  #include <sys/time.h>
@@ -10,200 +10,224 @@ Index: libusb-0.1.12/linux.c
  
  #include "linux.h"
  #include "usbi.h"
-@@ -36,6 +37,8 @@
- 	filename, strerror(errno));
-   }
- 
-+  syslog(LOG_DEBUG, "%s: %s", "open", filename);
-+
-   return fd;
- }
- 
-@@ -51,6 +54,8 @@
-   if (dev->fd < 0)
-     return 0;
- 
-+  syslog(LOG_DEBUG, "%s: %s/%s/%s", "close", usb_path, dev->bus->dirname, dev->device->filename);
-+
-   if (close(dev->fd) == -1)
-     /* Failing trying to close a file really isn't an error, so return 0 */
-     USB_ERROR_STR(0, "tried to close device fd %d: %s", dev->fd,
-@@ -68,6 +73,8 @@
+@@ -68,6 +69,8 @@
      USB_ERROR_STR(-errno, "could not set config %d: %s", configuration,
  	strerror(errno));
  
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_set_configuration", dev->device->filename, configuration);
++  syslog(LOG_DEBUG, "%s: dev=%s conf=%d", "usb_set_configuration", dev->device->filename, configuration);
 +
    dev->config = configuration;
  
    return 0;
-@@ -86,6 +93,8 @@
+@@ -86,6 +89,8 @@
  	strerror(errno));
    }
  
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_claim_interface", dev->device->filename, interface);
++  syslog(LOG_DEBUG, "%s: dev=%s iface=%d", "usb_claim_interface", dev->device->filename, interface);
 +
    dev->interface = interface;
  
    return 0;
-@@ -100,6 +109,8 @@
+@@ -100,6 +105,8 @@
      USB_ERROR_STR(-errno, "could not release intf %d: %s", interface,
      	strerror(errno));
  
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_release_interface", dev->device->filename, interface);
++  syslog(LOG_DEBUG, "%s: dev=%s iface=%d", "usb_release_interface", dev->device->filename, interface);
 +
    dev->interface = -1;
  
    return 0;
-@@ -121,6 +132,8 @@
+@@ -121,6 +128,8 @@
      USB_ERROR_STR(-errno, "could not set alt intf %d/%d: %s",
  	dev->interface, alternate, strerror(errno));
  
-+  syslog(LOG_DEBUG, "%s: %s %d %d", "usb_set_altinterface", dev->device->filename, dev->interface, alternate);
++  syslog(LOG_DEBUG, "%s: dev=%s iface=%d alt=%d", "usb_set_altinterface", dev->device->filename, dev->interface, alternate);
 +
    dev->altsetting = alternate;
  
    return 0;
-@@ -153,6 +166,9 @@
+@@ -153,6 +162,12 @@
    if (ret < 0)
      USB_ERROR_STR(-errno, "error sending control message: %s", strerror(errno));
  
-+  syslog(LOG_DEBUG, "%s: %s %d %d %d %d %d", "usb_control_msg", dev->device->filename,
-+	 requesttype, request, value, index, size);
++  syslog(LOG_DEBUG, "%s: dev=%s reqt=%d req=%d val=%d ix=%d s=%d t=%d r=%d", "usb_control_msg", dev->device->filename,
++	 requesttype, request, value, index, size, timeout, ret);
++  if (bytes) {
++	  syslog(LOG_DEBUG, "'%.*s'", size, bytes);
++  }
 +
    return ret;
  }
  
-@@ -168,6 +184,9 @@
-   struct usb_urb *context;
-   int ret, waiting;
- 
-+  syslog(LOG_DEBUG, "%s: %s %d %d", "usb_urb_transfer", dev->device->filename,
-+	 ep, urbtype);
-+
-   /*
-    * HACK: The use of urb.usercontext is a hack to get threaded applications
-    * sort of working again. Threaded support is still not recommended, but
-@@ -286,6 +305,7 @@
+@@ -286,6 +301,7 @@
  int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
  	int timeout)
  {
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_bulk_write", dev->device->filename, ep);
++  syslog(LOG_DEBUG, "%s: dev=%s ep=%d", "usb_bulk_write", dev->device->filename, ep);
    /* Ensure the endpoint address is correct */
    return usb_urb_transfer(dev, ep, USB_URB_TYPE_BULK, (char *)bytes, size,
  		timeout);
-@@ -294,6 +314,7 @@
+@@ -294,6 +310,7 @@
  int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
  	int timeout)
  {
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_bulk_read", dev->device->filename, ep);
++  syslog(LOG_DEBUG, "%s: dev=%s ep=%d", "usb_bulk_read", dev->device->filename, ep);
    /* Ensure the endpoint address is correct */
    ep |= USB_ENDPOINT_IN;
    return usb_urb_transfer(dev, ep, USB_URB_TYPE_BULK, bytes, size,
-@@ -308,6 +329,7 @@
+@@ -308,18 +325,38 @@
  int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
  	int timeout)
  {
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_interrupt_write", dev->device->filename, ep);
++  int ret;
++
    /* Ensure the endpoint address is correct */
-   return usb_urb_transfer(dev, ep, USB_URB_TYPE_INTERRUPT, (char *)bytes, size,
+-  return usb_urb_transfer(dev, ep, USB_URB_TYPE_INTERRUPT, (char *)bytes, size,
++  ret = usb_urb_transfer(dev, ep, USB_URB_TYPE_INTERRUPT, (char *)bytes, size,
  		timeout);
-@@ -316,6 +338,7 @@
++
++  syslog(LOG_DEBUG, "%s: dev=%s ep=%d s=%d t=%d r=%d", "usb_interrupt_write", dev->device->filename,
++	 ep, size, timeout, ret);
++  if (bytes) {
++	  syslog(LOG_DEBUG, "'%.*s'", size, bytes);
++  }
++
++  return ret;
+ }
+ 
  int usb_interrupt_read(usb_dev_handle *dev, int ep, char *bytes, int size,
  	int timeout)
  {
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_interrupt_read", dev->device->filename, ep);
++  int ret;
++
    /* Ensure the endpoint address is correct */
    ep |= USB_ENDPOINT_IN;
-   return usb_urb_transfer(dev, ep, USB_URB_TYPE_INTERRUPT, bytes, size,
-@@ -328,6 +351,8 @@
-   DIR *dir;
-   struct dirent *entry;
- 
-+  syslog(LOG_DEBUG, "%s", "usb_os_find_busses");
+-  return usb_urb_transfer(dev, ep, USB_URB_TYPE_INTERRUPT, bytes, size,
++  ret = usb_urb_transfer(dev, ep, USB_URB_TYPE_INTERRUPT, bytes, size,
+ 		timeout);
 +
-   dir = opendir(usb_path);
-   if (!dir)
-     USB_ERROR_STR(-errno, "couldn't opendir(%s): %s", usb_path,
-@@ -376,6 +401,8 @@
-   struct dirent *entry;
-   char dirpath[PATH_MAX + 1];
- 
-+  syslog(LOG_DEBUG, "%s: %s", "usb_os_find_devices", bus->dirname);
++  syslog(LOG_DEBUG, "%s: dev=%s ep=%d s=%d t=%d r=%d", "usb_interrupt_read", dev->device->filename,
++	 ep, size, timeout, ret);
++  if (bytes) {
++	  syslog(LOG_DEBUG, "'%.*s'", size, bytes);
++  }
 +
-   snprintf(dirpath, PATH_MAX, "%s/%s", usb_path, bus->dirname);
++  return ret;
+ }
  
-   dir = opendir(dirpath);
-@@ -537,6 +564,8 @@
-   struct usb_ioctl command;
-   int ret, i, i1;
- 
-+  syslog(LOG_DEBUG, "%s: %s", "usb_os_determine_children", bus->dirname);
-+
-   /* Create a list of devices first */
-   memset(devices, 0, sizeof(devices));
-   for (dev = bus->devices; dev; dev = dev->next)
-@@ -619,6 +648,8 @@
-   struct dirent *entry;
-   int found = 0;
- 
-+  syslog(LOG_DEBUG, "%s: %s", "check_usb_vfs", dirname);
-+
-   dir = opendir(dirname);
-   if (!dir)
-     return 0;
-@@ -666,6 +697,9 @@
+ int usb_os_find_busses(struct usb_bus **busses)
+@@ -666,6 +703,7 @@
      else
        fprintf(stderr, "usb_os_init: No USB VFS found, is it mounted?\n");
    }
 +
-+  syslog(LOG_DEBUG, "%s: %s", "usb_os_init", usb_path);
-+
  }
  
  int usb_resetep(usb_dev_handle *dev, unsigned int ep)
-@@ -677,6 +711,8 @@
+@@ -677,6 +715,8 @@
      USB_ERROR_STR(-errno, "could not reset ep %d: %s", ep,
      	strerror(errno));
  
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_resetep", dev->device->filename, ep);
++  syslog(LOG_DEBUG, "%s: dev=%s ep=%d", "usb_resetep", dev->device->filename, ep);
 +
    return 0;
  }
  
-@@ -689,6 +725,8 @@
+@@ -689,6 +729,8 @@
      USB_ERROR_STR(-errno, "could not clear/halt ep %d: %s", ep,
      	strerror(errno));
  
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_clear_halt", dev->device->filename, ep);
++  syslog(LOG_DEBUG, "%s: dev=%s ep=%d", "usb_clear_halt", dev->device->filename, ep);
 +
    return 0;
  }
  
-@@ -700,6 +738,8 @@
+@@ -700,6 +742,8 @@
    if (ret)
       USB_ERROR_STR(-errno, "could not reset: %s", strerror(errno));
  
-+  syslog(LOG_DEBUG, "%s: %s", "usb_reset", dev->device->filename);
++  syslog(LOG_DEBUG, "%s: dev=%s", "usb_reset", dev->device->filename);
 +
    return 0;
  }
  
-@@ -717,6 +757,8 @@
+@@ -717,6 +761,8 @@
    strncpy(name, getdrv.driver, namelen - 1);
    name[namelen - 1] = 0;
  
-+  syslog(LOG_DEBUG, "%s: %s %d %s", "usb_get_driver_np", dev->device->filename, interface, name);
++  syslog(LOG_DEBUG, "%s: dev=%s iface=%d name=%s", "usb_get_driver_np", dev->device->filename, interface, name);
 +
    return 0;
  }
  
-@@ -734,6 +776,8 @@
+@@ -734,6 +780,8 @@
      USB_ERROR_STR(-errno, "could not detach kernel driver from interface %d: %s",
          interface, strerror(errno));
  
-+  syslog(LOG_DEBUG, "%s: %s %d", "usb_detach_kernel_driver_np", dev->device->filename, interface);
++  syslog(LOG_DEBUG, "%s: dev=%s iface=%d", "usb_detach_kernel_driver_np", dev->device->filename, interface);
 +
    return 0;
  }
  
+Index: libusb-0.1.12/usb.c
+===================================================================
+--- libusb-0.1.12.orig/usb.c	2012-09-19 15:42:03.651490983 +0200
++++ libusb-0.1.12/usb.c	2012-09-19 15:42:04.023438295 +0200
+@@ -10,6 +10,7 @@
+ #include <stdio.h>	/* stderr */
+ #include <string.h>	/* strcmp */
+ #include <errno.h>
++#include <syslog.h>
+ 
+ #include "usbi.h"
+ 
+@@ -21,6 +22,8 @@
+   struct usb_bus *busses, *bus;
+   int ret, changes = 0;
+ 
++  syslog(LOG_DEBUG, "%s", "usb_find_busses");
++
+   ret = usb_os_find_busses(&busses);
+   if (ret < 0)
+     return ret;
+@@ -91,6 +94,8 @@
+   struct usb_bus *bus;
+   int ret, changes = 0;
+ 
++  syslog(LOG_DEBUG, "%s", "usb_find_devices");
++
+   for (bus = usb_busses; bus; bus = bus->next) {
+     struct usb_device *devices, *dev;
+ 
+@@ -189,6 +194,8 @@
+ 
+ void usb_init(void)
+ {
++  syslog(LOG_DEBUG, "%s", "usb_init");
++
+   if (getenv("USB_DEBUG"))
+     usb_set_debug(atoi(getenv("USB_DEBUG")));
+ 
+@@ -199,6 +206,8 @@
+ {
+   usb_dev_handle *udev;
+ 
++  syslog(LOG_DEBUG, "%s", "usb_open");
++
+   udev = malloc(sizeof(*udev));
+   if (!udev)
+     return NULL;
+@@ -277,6 +286,8 @@
+ {
+   int ret;
+ 
++  syslog(LOG_DEBUG, "%s", "usb_close");
++
+   ret = usb_os_close(dev);
+   free(dev);
+ 
+@@ -304,4 +315,3 @@
+ {
+   free(bus);
+ }
+-
