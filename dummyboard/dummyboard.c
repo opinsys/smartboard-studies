@@ -12,6 +12,7 @@ int main(void)
 {
 	struct usb_bus *busses;
 	struct usb_bus *bus;
+	struct usb_device *dev;
 
 	usb_init();
 	usb_find_busses();
@@ -20,7 +21,6 @@ int main(void)
 	busses = usb_get_busses();
 
 	for (bus = busses; bus; bus = bus->next) {
-		struct usb_device *dev;
 
 		for (dev = bus->devices; dev; dev = dev->next) {
 			if (is_smartboard(dev))
@@ -28,7 +28,11 @@ int main(void)
 		}
 	}
 
+	fprintf(stderr, "error: SMARTBoard not found\n");
+	return 1;
+
 smartboard_found:
+	printf("%d\n", dev->devnum);
 
 	return 0;
 }
