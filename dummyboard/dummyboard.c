@@ -89,8 +89,8 @@ int main(void)
 		if (usb_release_interface(devh, DUMMY_SB_IFACE))
 			fprintf(stderr, "error: libusb: %s", usb_strerror());
 
-	if (devh)
-		usb_close(devh);
+	if (devh && usb_close(devh))
+		fprintf(stderr, "error: libusb: %s", usb_strerror());
 
 	printf("GracefulShutdown™!\n");
 
