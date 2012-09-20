@@ -4,7 +4,10 @@
 #include <usb.h>
 
 static const useconds_t DUMMY_LOOP_INTERVAL = 100000;
-static const int DUMMY_SB_IFACE = 1;
+
+/* TODO: This should be replaced with a sniffing logic at some
+ * point. For now, we can just rely on this magic number. */
+static const int DUMMY_SB_IFACE = 0;
 
 static int is_smartboard(const struct usb_device *const dev)
 {
