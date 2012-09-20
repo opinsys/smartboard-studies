@@ -3,11 +3,32 @@
 #include <stdbool.h>
 #include <usb.h>
 
+static char *dummy_aget_hexstr(const char *const bytes, const size_t size)
+{
+	char *hexstr;
+	char *hexstr_ptr;
+	int i;
+
+	hexstr = calloc(3 * size + 1, sizeof(char));
+	hexstr_ptr = hexstr;
+
+	for (i = 0; i < size; ++i)
+		hexstr_ptr += sprintf(hexstr_ptr, "%02hhX ", bytes[i]);
+
+	return hexstr;
+}
+
 static const useconds_t DUMMY_LOOP_INTERVAL = 100000;
 
 /* TODO: This should be replaced with a sniffing logic at some
  * point. For now, we can just rely on this magic number. */
 static const int DUMMY_SB_IFACE = 0;
+
+static const int DUMMY_SB_EP_READ = 0x82;
+
+/* This magic value is sniffed from a conversation between an authentic
+   SMARTBoardService and an authentic SMARTBoard. */
+static const int DUMMY_SB_TIMEOUT_READ = 100;
 
 static int dummy_is_smartboard(const struct usb_device *const dev)
 {
@@ -53,6 +74,10 @@ int main(void)
 	signal(SIGUSR2, dummy_sigint_handler);
 
 	while (dummy_is_running) {
+		const int read_buf_size = 32;
+		char read_buf[read_buf_size];
+		int read_size;
+
 		usleep(DUMMY_LOOP_INTERVAL);
 
 		usb_find_busses();
@@ -88,6 +113,21 @@ int main(void)
 				fprintf(stderr, "error: libusb: %s\n", usb_strerror());
 			continue;
 		}
+
+		do {
+			read_size = usb_interrupt_read(devh, DUMMY_SB_EP_READ,
+						       read_buf, read_buf_size,
+						       DUMMY_SB_TIMEOUT_READ);
+			if (read_size < 0) {
+				fprintf(stderr, "error: libb: %d %s\n", read_size, usb_strerror());
+			} else {
+				char *hexstr;
+				hexstr = dummy_aget_hexstr(read_buf, read_size);
+				printf("%s\n", hexstr);
+				free(hexstr);
+			}
+
+		} while (read_size >= 0);
 	}
 
 	if (devh && is_claimed && usb_release_interface(devh, DUMMY_SB_IFACE))
