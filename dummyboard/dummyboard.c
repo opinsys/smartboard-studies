@@ -9,7 +9,7 @@ static const useconds_t DUMMY_LOOP_INTERVAL = 100000;
  * point. For now, we can just rely on this magic number. */
 static const int DUMMY_SB_IFACE = 0;
 
-static int is_smartboard(const struct usb_device *const dev)
+static int dummy_is_smartboard(const struct usb_device *const dev)
 {
 	return dev->descriptor.idVendor == 0x0b8c
 		&& dev->descriptor.idProduct == 0x0001;
@@ -23,7 +23,7 @@ static struct usb_device *dummy_find_smartboard(void)
 
 	for (bus = usb_get_busses(); bus; bus = bus->next) {
 		for (dev = bus->devices; dev; dev = dev->next) {
-			if (is_smartboard(dev))
+			if (dummy_is_smartboard(dev))
 				return dev;
 		}
 	}
