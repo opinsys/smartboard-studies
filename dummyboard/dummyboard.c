@@ -70,7 +70,7 @@ int main(void)
 
 		if (!is_detached) {
 			if (usb_detach_kernel_driver_np(devh, DUMMY_SB_IFACE))
-				fprintf(stderr, "error: libusb: %s", usb_strerror());
+				fprintf(stderr, "error: libusb: %s\n", usb_strerror());
 			else
 				is_detached = true;
 			continue;
@@ -78,7 +78,7 @@ int main(void)
 
 		if (!is_claimed) {
 			if (usb_claim_interface(devh, DUMMY_SB_IFACE))
-				fprintf(stderr, "error: libusb: %s", usb_strerror());
+				fprintf(stderr, "error: libusb: %s\n", usb_strerror());
 			else
 				is_claimed = true;
 			continue;
@@ -86,10 +86,10 @@ int main(void)
 	}
 
 	if (devh && is_claimed && usb_release_interface(devh, DUMMY_SB_IFACE))
-		fprintf(stderr, "error: libusb: %s", usb_strerror());
+		fprintf(stderr, "error: libusb: %s\n", usb_strerror());
 
 	if (devh && usb_close(devh))
-		fprintf(stderr, "error: libusb: %s", usb_strerror());
+		fprintf(stderr, "error: libusb: %s\n", usb_strerror());
 
 	printf("GracefulShutdown™!\n");
 
