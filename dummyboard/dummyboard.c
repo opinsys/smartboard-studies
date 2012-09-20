@@ -77,8 +77,10 @@ int main(void)
 		}
 
 		if (!is_claimed) {
-			usb_claim_interface(devh, DUMMY_SB_IFACE);
-			is_claimed = true;
+			if (usb_claim_interface(devh, DUMMY_SB_IFACE))
+				fprintf(stderr, "error: libusb: %s", usb_strerror());
+			else
+				is_claimed = true;
 			continue;
 		}
 	}
