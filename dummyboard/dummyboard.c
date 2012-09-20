@@ -85,9 +85,8 @@ int main(void)
 		}
 	}
 
-	if (devh && is_claimed)
-		if (usb_release_interface(devh, DUMMY_SB_IFACE))
-			fprintf(stderr, "error: libusb: %s", usb_strerror());
+	if (devh && is_claimed && usb_release_interface(devh, DUMMY_SB_IFACE))
+		fprintf(stderr, "error: libusb: %s", usb_strerror());
 
 	if (devh && usb_close(devh))
 		fprintf(stderr, "error: libusb: %s", usb_strerror());
