@@ -1,7 +1,7 @@
 Index: libusb-0.1.12/linux.c
 ===================================================================
---- libusb-0.1.12.orig/linux.c	2012-09-19 15:42:04.003484041 +0200
-+++ libusb-0.1.12/linux.c	2012-09-19 15:48:33.277184441 +0200
+--- libusb-0.1.12.orig/linux.c	2012-09-19 16:19:57.077797273 +0200
++++ libusb-0.1.12/linux.c	2012-09-20 13:25:49.939914617 +0200
 @@ -14,6 +14,7 @@
  #include <errno.h>
  #include <sys/time.h>
@@ -37,7 +37,7 @@ Index: libusb-0.1.12/linux.c
    dev->interface = -1;
  
    return 0;
-@@ -121,6 +128,8 @@
+@@ -121,11 +128,29 @@
      USB_ERROR_STR(-errno, "could not set alt intf %d/%d: %s",
  	dev->interface, alternate, strerror(errno));
  
@@ -46,20 +46,44 @@ Index: libusb-0.1.12/linux.c
    dev->altsetting = alternate;
  
    return 0;
-@@ -153,6 +162,12 @@
+ }
+ 
++static char *aget_hexstr(const char *const bytes, const size_t size)
++{
++	char *hexstr;
++	char *hexstr_ptr;
++	int i;
++
++	hexstr = calloc(3 * size + 1, sizeof(char));
++	hexstr_ptr = hexstr;
++
++	for (i = 0; i < size; ++i) {
++		hexstr_ptr += sprintf(hexstr_ptr, "%02hhX ", bytes[i]);
++	}
++
++	return hexstr;
++}
++
+ /*
+  * Linux usbfs has a limit of one page size for synchronous bulk read/write.
+  * 4096 is the most portable maximum we can do for now.
+@@ -153,6 +178,15 @@
    if (ret < 0)
      USB_ERROR_STR(-errno, "error sending control message: %s", strerror(errno));
  
 +  syslog(LOG_DEBUG, "%s: dev=%s reqt=%d req=%d val=%d ix=%d s=%d t=%d r=%d", "usb_control_msg", dev->device->filename,
 +	 requesttype, request, value, index, size, timeout, ret);
-+  if (bytes) {
-+	  syslog(LOG_DEBUG, "'%.*s'", size, bytes);
++  if (ret >= 0 && bytes) {
++	  char *hexstr;
++	  hexstr = aget_hexstr(bytes, size);
++	  syslog(LOG_DEBUG, "%s", hexstr);
++	  free(hexstr);
 +  }
 +
    return ret;
  }
  
-@@ -286,6 +301,7 @@
+@@ -286,6 +320,7 @@
  int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
  	int timeout)
  {
@@ -67,7 +91,7 @@ Index: libusb-0.1.12/linux.c
    /* Ensure the endpoint address is correct */
    return usb_urb_transfer(dev, ep, USB_URB_TYPE_BULK, (char *)bytes, size,
  		timeout);
-@@ -294,6 +310,7 @@
+@@ -294,6 +329,7 @@
  int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
  	int timeout)
  {
@@ -75,7 +99,7 @@ Index: libusb-0.1.12/linux.c
    /* Ensure the endpoint address is correct */
    ep |= USB_ENDPOINT_IN;
    return usb_urb_transfer(dev, ep, USB_URB_TYPE_BULK, bytes, size,
-@@ -308,18 +325,38 @@
+@@ -308,18 +344,44 @@
  int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
  	int timeout)
  {
@@ -88,8 +112,11 @@ Index: libusb-0.1.12/linux.c
 +
 +  syslog(LOG_DEBUG, "%s: dev=%s ep=%d s=%d t=%d r=%d", "usb_interrupt_write", dev->device->filename,
 +	 ep, size, timeout, ret);
-+  if (bytes) {
-+	  syslog(LOG_DEBUG, "'%.*s'", size, bytes);
++  if (ret >= 0 && bytes) {
++	  char *hexstr;
++	  hexstr = aget_hexstr(bytes, size);
++	  syslog(LOG_DEBUG, "%s", hexstr);
++	  free(hexstr);
 +  }
 +
 +  return ret;
@@ -108,15 +135,18 @@ Index: libusb-0.1.12/linux.c
 +
 +  syslog(LOG_DEBUG, "%s: dev=%s ep=%d s=%d t=%d r=%d", "usb_interrupt_read", dev->device->filename,
 +	 ep, size, timeout, ret);
-+  if (bytes) {
-+	  syslog(LOG_DEBUG, "'%.*s'", size, bytes);
++  if (ret >= 0 && bytes) {
++	  char *hexstr;
++	  hexstr = aget_hexstr(bytes, size);
++	  syslog(LOG_DEBUG, "%s", hexstr);
++	  free(hexstr);
 +  }
 +
 +  return ret;
  }
  
  int usb_os_find_busses(struct usb_bus **busses)
-@@ -666,6 +703,7 @@
+@@ -666,6 +728,7 @@
      else
        fprintf(stderr, "usb_os_init: No USB VFS found, is it mounted?\n");
    }
@@ -124,7 +154,7 @@ Index: libusb-0.1.12/linux.c
  }
  
  int usb_resetep(usb_dev_handle *dev, unsigned int ep)
-@@ -677,6 +715,8 @@
+@@ -677,6 +740,8 @@
      USB_ERROR_STR(-errno, "could not reset ep %d: %s", ep,
      	strerror(errno));
  
@@ -133,7 +163,7 @@ Index: libusb-0.1.12/linux.c
    return 0;
  }
  
-@@ -689,6 +729,8 @@
+@@ -689,6 +754,8 @@
      USB_ERROR_STR(-errno, "could not clear/halt ep %d: %s", ep,
      	strerror(errno));
  
@@ -142,7 +172,7 @@ Index: libusb-0.1.12/linux.c
    return 0;
  }
  
-@@ -700,6 +742,8 @@
+@@ -700,6 +767,8 @@
    if (ret)
       USB_ERROR_STR(-errno, "could not reset: %s", strerror(errno));
  
@@ -151,7 +181,7 @@ Index: libusb-0.1.12/linux.c
    return 0;
  }
  
-@@ -717,6 +761,8 @@
+@@ -717,6 +786,8 @@
    strncpy(name, getdrv.driver, namelen - 1);
    name[namelen - 1] = 0;
  
@@ -160,7 +190,7 @@ Index: libusb-0.1.12/linux.c
    return 0;
  }
  
-@@ -734,6 +780,8 @@
+@@ -734,6 +805,8 @@
      USB_ERROR_STR(-errno, "could not detach kernel driver from interface %d: %s",
          interface, strerror(errno));
  
@@ -171,8 +201,8 @@ Index: libusb-0.1.12/linux.c
  
 Index: libusb-0.1.12/usb.c
 ===================================================================
---- libusb-0.1.12.orig/usb.c	2012-09-19 15:42:03.651490983 +0200
-+++ libusb-0.1.12/usb.c	2012-09-19 15:42:04.023438295 +0200
+--- libusb-0.1.12.orig/usb.c	2012-09-19 16:19:56.749615197 +0200
++++ libusb-0.1.12/usb.c	2012-09-19 16:19:57.094192989 +0200
 @@ -10,6 +10,7 @@
  #include <stdio.h>	/* stderr */
  #include <string.h>	/* strcmp */
