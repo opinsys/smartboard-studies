@@ -1,7 +1,7 @@
 Index: libusb-0.1.12/linux.c
 ===================================================================
---- libusb-0.1.12.orig/linux.c	2012-09-19 16:19:57.077797273 +0200
-+++ libusb-0.1.12/linux.c	2012-09-20 13:25:49.939914617 +0200
+--- libusb-0.1.12.orig/linux.c	2012-09-20 13:26:08.463715604 +0200
++++ libusb-0.1.12/linux.c	2012-09-20 14:57:00.675702366 +0200
 @@ -14,6 +14,7 @@
  #include <errno.h>
  #include <sys/time.h>
@@ -75,7 +75,7 @@ Index: libusb-0.1.12/linux.c
 +	 requesttype, request, value, index, size, timeout, ret);
 +  if (ret >= 0 && bytes) {
 +	  char *hexstr;
-+	  hexstr = aget_hexstr(bytes, size);
++	  hexstr = aget_hexstr(bytes, ret);
 +	  syslog(LOG_DEBUG, "%s", hexstr);
 +	  free(hexstr);
 +  }
@@ -114,7 +114,7 @@ Index: libusb-0.1.12/linux.c
 +	 ep, size, timeout, ret);
 +  if (ret >= 0 && bytes) {
 +	  char *hexstr;
-+	  hexstr = aget_hexstr(bytes, size);
++	  hexstr = aget_hexstr(bytes, ret);
 +	  syslog(LOG_DEBUG, "%s", hexstr);
 +	  free(hexstr);
 +  }
@@ -137,7 +137,7 @@ Index: libusb-0.1.12/linux.c
 +	 ep, size, timeout, ret);
 +  if (ret >= 0 && bytes) {
 +	  char *hexstr;
-+	  hexstr = aget_hexstr(bytes, size);
++	  hexstr = aget_hexstr(bytes, ret);
 +	  syslog(LOG_DEBUG, "%s", hexstr);
 +	  free(hexstr);
 +  }
@@ -201,8 +201,8 @@ Index: libusb-0.1.12/linux.c
  
 Index: libusb-0.1.12/usb.c
 ===================================================================
---- libusb-0.1.12.orig/usb.c	2012-09-19 16:19:56.749615197 +0200
-+++ libusb-0.1.12/usb.c	2012-09-19 16:19:57.094192989 +0200
+--- libusb-0.1.12.orig/usb.c	2012-09-20 13:26:08.139691851 +0200
++++ libusb-0.1.12/usb.c	2012-09-20 13:26:08.483673482 +0200
 @@ -10,6 +10,7 @@
  #include <stdio.h>	/* stderr */
  #include <string.h>	/* strcmp */
