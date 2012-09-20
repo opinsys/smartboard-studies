@@ -69,8 +69,10 @@ int main(void)
 		}
 
 		if (!is_detached) {
-			usb_detach_kernel_driver_np(devh, DUMMY_SB_IFACE);
-			is_detached = true;
+			if (usb_detach_kernel_driver_np(devh, DUMMY_SB_IFACE))
+				fprintf(stderr, "error: libusb: %s", usb_strerror());
+			else
+				is_detached = true;
 			continue;
 		}
 
