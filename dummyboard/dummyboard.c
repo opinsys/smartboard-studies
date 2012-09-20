@@ -72,24 +72,20 @@ int main(void)
 			const int driver_name_size = 256;
 			char driver_name[driver_name_size];
 
-			if (usb_get_driver_np(devh, DUMMY_SB_IFACE,
-					      driver_name, driver_name_size))
+			/* Assume the driver is detached if the driver's
+			 * name cannot be found. */
+			is_detached = usb_get_driver_np(devh, DUMMY_SB_IFACE,
+							driver_name, driver_name_size);
+			is_detached = is_detached || !usb_detach_kernel_driver_np(devh, DUMMY_SB_IFACE);
+			if (!is_detached)
 				fprintf(stderr, "error: libusb: %s\n", usb_strerror());
-			else
-				printf("Detach driver '%.*s'\n", driver_name_size, driver_name);
-
-			if (usb_detach_kernel_driver_np(devh, DUMMY_SB_IFACE))
-				fprintf(stderr, "error: libusb: %s\n", usb_strerror());
-			else
-				is_detached = true;
 			continue;
 		}
 
 		if (!is_claimed) {
-			if (usb_claim_interface(devh, DUMMY_SB_IFACE))
+			is_claimed = !usb_claim_interface(devh, DUMMY_SB_IFACE);
+			if (!is_claimed)
 				fprintf(stderr, "error: libusb: %s\n", usb_strerror());
-			else
-				is_claimed = true;
 			continue;
 		}
 	}
