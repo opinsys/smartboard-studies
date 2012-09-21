@@ -29,7 +29,7 @@ static const int DUMMY_SB_EP_READ = 0x82;
 
 /* This magic value is sniffed from a conversation between an authentic
    SMARTBoardService and an authentic SMARTBoard. */
-static const int DUMMY_SB_TIMEOUT_READ = 100;
+static const int DUMMY_SB_TIMEOUT_READ = 1;
 
 static int dummy_is_smartboard(const struct usb_device *const dev)
 {
