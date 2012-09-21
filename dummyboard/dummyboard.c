@@ -119,7 +119,7 @@ int main(void)
 						       read_buf, read_buf_size,
 						       DUMMY_SB_TIMEOUT_READ);
 			if (read_size < 0) {
-				fprintf(stderr, "error: libb: %d %s\n", read_size, usb_strerror());
+				fprintf(stderr, "error: libusb: %d %s\n", read_size, usb_strerror());
 			} else {
 				char *hexstr;
 				hexstr = dummy_aget_hexstr(read_buf, read_size);
