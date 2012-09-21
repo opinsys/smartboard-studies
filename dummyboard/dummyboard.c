@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -118,12 +119,15 @@ int main(void)
 			read_size = usb_interrupt_read(devh, DUMMY_SB_EP_READ,
 						       read_buf, read_buf_size,
 						       DUMMY_SB_TIMEOUT_READ);
-			if (read_size < 0) {
+			if (read_size == -ETIMEDOUT) {
+				break;
+			} else if (read_size < 0) {
 				fprintf(stderr, "error: libusb: %d %s\n", read_size, usb_strerror());
+				break;
 			} else {
 				char *hexstr;
 				hexstr = dummy_aget_hexstr(read_buf, read_size);
-				printf("%s\n", hexstr);
+				printf("IN: %s\n", hexstr);
 				free(hexstr);
 			}
 
