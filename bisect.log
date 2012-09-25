@@ -1,0 +1,35 @@
+git bisect start
+# bad: [0d7614f09c1ebdbaa1599a5aba7593f147bf96ee] Linux 3.6-rc1
+git bisect bad 0d7614f09c1ebdbaa1599a5aba7593f147bf96ee
+# good: [d61ed4631511b08d2e14924eab16a9ddaed44df6] Linux 3.5.4
+git bisect good d61ed4631511b08d2e14924eab16a9ddaed44df6
+# good: [28a33cbc24e4256c143dce96c7d93bf423229f92] Linux 3.5
+git bisect good 28a33cbc24e4256c143dce96c7d93bf423229f92
+# good: [614a6d4341b3760ca98a1c2c09141b71db5d1e90] Merge branch 'for-3.6' of git://git.kernel.org/pub/scm/linux/kernel/git/tj/cgroup
+git bisect good 614a6d4341b3760ca98a1c2c09141b71db5d1e90
+# bad: [aa0b3b2bee1d3ca8355de76caebf65b836c9bb6e] Merge branch 'for-3.6-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/cooloney/linux-leds
+git bisect bad aa0b3b2bee1d3ca8355de76caebf65b836c9bb6e
+# good: [419e9266884fa853179ab726c27a63a9d3ae46e3] staging: csr: delete a bunch of unused library functions
+git bisect good 419e9266884fa853179ab726c27a63a9d3ae46e3
+# bad: [c1b669b72a05aeae0882742dd40f30d51732ed15] Merge branches 'x86-cleanups-for-linus' and 'x86-cpufeature-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+git bisect bad c1b669b72a05aeae0882742dd40f30d51732ed15
+# bad: [9fc377799bc9bfd8d5cb35d0d1ea2e2458cbdbb3] Merge tag 'usb-3.6-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb
+git bisect bad 9fc377799bc9bfd8d5cb35d0d1ea2e2458cbdbb3
+# bad: [32830f207691176234b4c4dd17f0d7ab6d87d94b] USB: EHCI: use hrtimer for unlinking empty async QHs
+git bisect bad 32830f207691176234b4c4dd17f0d7ab6d87d94b
+# good: [94ff447cf275170042a7a05b972b6da8b94754ca] Merge tag 'gadget-for-v3.6' of git://git.kernel.org/pub/scm/linux/kernel/git/balbi/usb into usb-next
+git bisect good 94ff447cf275170042a7a05b972b6da8b94754ca
+# good: [ff9cce82772a78983b529e044d85884d3ec95fda] Merge tag 'xceiv-for-v3.6' of git://git.kernel.org/pub/scm/linux/kernel/git/balbi/usb into usb-next
+git bisect good ff9cce82772a78983b529e044d85884d3ec95fda
+# good: [b3d99681227a8c5e1f50bccae0f55930aad2ca77] usb: otg: add basic mxs phy driver support
+git bisect good b3d99681227a8c5e1f50bccae0f55930aad2ca77
+# good: [2f5bb665ba7a14c5842fa2e1cde2be039843a2a2] USB: EHCI: add pointer to end of async-unlink list
+git bisect good 2f5bb665ba7a14c5842fa2e1cde2be039843a2a2
+# good: [314466101c6ae14f6f5db8a86eda1509ba2c02a8] USB: EHCI: use hrtimer for async schedule
+git bisect good 314466101c6ae14f6f5db8a86eda1509ba2c02a8
+# bad: [55934eb3b9fa52eb53b9d7342267fc73c38206aa] USB: EHCI: use hrtimer for (s)iTD deallocation
+git bisect bad 55934eb3b9fa52eb53b9d7342267fc73c38206aa
+# bad: [bf6387bcd16975ba8952b094f262a359d74e1c8a] USB: EHCI: use hrtimer for controller death
+git bisect bad bf6387bcd16975ba8952b094f262a359d74e1c8a
+# bad: [df2022553dd8d34d49e16c19d851ea619438f0ef] USB: EHCI: use hrtimer for interrupt QH unlink
+git bisect bad df2022553dd8d34d49e16c19d851ea619438f0ef
