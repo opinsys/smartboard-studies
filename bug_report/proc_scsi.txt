@@ -1,0 +1,7 @@
+Attached devices:
+Host: scsi0 Channel: 00 Id: 00 Lun: 00
+  Vendor: ATA      Model: KINGSTON SS050S2 Rev: 1108
+  Type:   Direct-Access                    ANSI  SCSI revision: 05
+Host: scsi1 Channel: 00 Id: 00 Lun: 00
+  Vendor: TSSTcorp Model: DVD+-RW TS-L633J Rev: D500
+  Type:   CD-ROM                           ANSI  SCSI revision: 05
