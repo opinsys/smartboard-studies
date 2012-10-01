@@ -1,11 +1,11 @@
-==========================================================
- PROBLEM: USB2 oopses with the latest stable kernel 3.5.4
-==========================================================
+=================================
+ PROBLEM: USB2 oopses with 3.5.4
+=================================
 
 An userspace program reading continuously an USB2 HID mouse's Interrupt
 IN endpoint causes stable kernels to oops.
 
-We found this bug was originally in systems with SMARTBoards
+We found this bug originally from systems with SMARTBoards
 (http://smarttech.com/smartboard) plugged in and proprietary SMART Board
 Service userspace driver process running and communicating with the
 board. However, the bug can be reproduced with a normal USB2 HID mouse
@@ -17,9 +17,14 @@ Board Service by observing/tracing it's libusb-usage, and sadly enough,
 it's quite accurate clone)
 
 We also observed that the problem cannot be reproduced with 3.6-rc7 (or
-at least is really hard compared to stable releases). Hence we bisected
-v3.5.4...v3.6-rc7 and found out that
-df2022553dd8d34d49e16c19d851ea619438f0ef seems to fix the problem.
+at least is really hard compared to stable releases). We therefore
+bisected v3.5.4...v3.6-rc7 and found out that
+df2022553dd8d34d49e16c19d851ea619438f0ef makes it really difficult to
+reproduce the problem.
+
+Does that commit (or the combination of the nearby EHCI-related commits)
+fix this issue or do they make it just significantly harder to
+reproduce?
 
 Oops:
 [  182.520363] BUG: unable to handle kernel paging request at 00efe000
@@ -131,16 +136,17 @@ $ ldd usboops
 4. ./usboops # and move your mouse
 
 The oops happens really fast, normally it takes only couple of seconds,
-but varies ofcourse slightly. On all systems where we have tested the
+but varies of course slightly. On all systems where we have tested the
 above prodecure, oopses have happened in less than 30 seconds.
 
-Our guess is that it's due to a race condition in EHCI-code.
+Our guess is that it's due to some lurking race condition in EHCI-code.
 
 System information
 ==================
 
 # cat /proc/version
 Linux version 3.5.4-opinsys (opinsys@optiplex-790) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #2 SMP Mon Oct 1 14:13:41 EEST 2012
+
 
 # cat /proc/modules
 nls_utf8 12493 1 - Live 0x00000000
@@ -183,6 +189,7 @@ video 18641 1 i915, Live 0x00000000
 lp 13299 0 - Live 0x00000000
 parport 40762 3 parport_pc,ppdev,lp, Live 0x00000000
 e1000e 170470 0 - Live 0x00000000
+
 
 # lspci -vvv
 00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
@@ -488,6 +495,127 @@ e1000e 170470 0 - Live 0x00000000
 	Region 0: Memory at e1a30000 (64-bit, non-prefetchable) [size=256]
 	Region 4: I/O ports at 3040 [size=32]
 
+
+# cat /proc/cpuinfo
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i3-2100 CPU @ 3.10GHz
+stepping	: 7
+microcode	: 0x14
+cpu MHz		: 1600.000
+cache size	: 3072 KB
+physical id	: 0
+siblings	: 4
+core id		: 0
+cpu cores	: 2
+apicid		: 0
+initial apicid	: 0
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx rdtscp lm constant_tsc arch_perfmon pebs bts xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 popcnt tsc_deadline_timer xsave avx lahf_lm arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 6186.17
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i3-2100 CPU @ 3.10GHz
+stepping	: 7
+microcode	: 0x14
+cpu MHz		: 1600.000
+cache size	: 3072 KB
+physical id	: 0
+siblings	: 4
+core id		: 1
+cpu cores	: 2
+apicid		: 2
+initial apicid	: 2
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx rdtscp lm constant_tsc arch_perfmon pebs bts xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 popcnt tsc_deadline_timer xsave avx lahf_lm arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 6186.17
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i3-2100 CPU @ 3.10GHz
+stepping	: 7
+microcode	: 0x14
+cpu MHz		: 1600.000
+cache size	: 3072 KB
+physical id	: 0
+siblings	: 4
+core id		: 0
+cpu cores	: 2
+apicid		: 1
+initial apicid	: 1
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx rdtscp lm constant_tsc arch_perfmon pebs bts xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 popcnt tsc_deadline_timer xsave avx lahf_lm arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 6186.17
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 42
+model name	: Intel(R) Core(TM) i3-2100 CPU @ 3.10GHz
+stepping	: 7
+microcode	: 0x14
+cpu MHz		: 3100.000
+cache size	: 3072 KB
+physical id	: 0
+siblings	: 4
+core id		: 1
+cpu cores	: 2
+apicid		: 3
+initial apicid	: 3
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx rdtscp lm constant_tsc arch_perfmon pebs bts xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 popcnt tsc_deadline_timer xsave avx lahf_lm arat epb xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 6186.17
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
 
 
 # cat /proc/ioports
