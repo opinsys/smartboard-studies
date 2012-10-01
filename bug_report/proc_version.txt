@@ -1,0 +1,1 @@
+Linux version 3.5.4-opinsys (opinsys@optiplex-790) (gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) ) #2 SMP Mon Oct 1 14:13:41 EEST 2012
