@@ -1,0 +1,21 @@
+If some fields are empty or look unusual you may have an old version.
+Compare to the current minimal requirements in Documentation/Changes.
+ 
+Linux optiplex-790 3.5.4-opinsys #2 SMP Mon Oct 1 14:13:41 EEST 2012 i686 i686 i386 GNU/Linux
+ 
+Gnu C                  4.6
+Gnu make               3.81
+binutils               2.22
+util-linux             2.20.1
+mount                  support
+module-init-tools      3.16
+e2fsprogs              1.42
+pcmciautils            018
+PPP                    2.4.5
+Linux C Library        2.15
+Dynamic linker (ldd)   2.15
+Procps                 3.2.8
+Net-tools              1.60
+Kbd                    1.15.2
+Sh-utils               8.13
+Modules Loaded         nls_utf8 isofs snd_hda_codec_hdmi snd_hda_codec_realtek rfcomm bnep bluetooth parport_pc ppdev snd_hda_intel i915 snd_hda_codec snd_hwdep snd_pcm snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq drm_kms_helper drm snd_timer hid_generic snd_seq_device usbhid psmouse snd hid coretemp dcdbas soundcore microcode snd_page_alloc serio_raw i2c_algo_bit mei mac_hid video lp parport e1000e
